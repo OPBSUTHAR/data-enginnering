@@ -1,0 +1,9 @@
+2026-03-30 12:53:43,303 - INFO - ZIP extracted successfully
+2026-03-30 12:53:43,388 - INFO - Ingested maven_fuzzy_factory_data_dictionary.csv with 36 rows
+2026-03-30 12:53:43,661 - INFO - Ingested orders.csv with 32313 rows
+2026-03-30 12:53:43,935 - INFO - Ingested order_items.csv with 40025 rows
+2026-03-30 12:53:43,967 - INFO - Ingested order_item_refunds.csv with 1731 rows
+2026-03-30 12:53:43,987 - INFO - Ingested products.csv with 4 rows
+2026-03-30 12:53:48,945 - INFO - Ingested website_pageviews.csv with 1188124 rows
+2026-03-30 12:53:52,190 - INFO - Ingested website_sessions.csv with 472871 rows
+2026-03-30 12:53:52,210 - INFO - Ingestion workflow completed successfully.

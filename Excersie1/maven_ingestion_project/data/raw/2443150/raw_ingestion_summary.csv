@@ -1,0 +1,8 @@
+table_name,rows_ingested,columns_ingested,raw_output_file
+maven_fuzzy_factory_data_dictionary,36,5,raw_maven_fuzzy_factory_data_dictionary.csv
+orders,32313,10,raw_orders.csv
+order_items,40025,9,raw_order_items.csv
+order_item_refunds,1731,7,raw_order_item_refunds.csv
+products,4,5,raw_products.csv
+website_pageviews,1188124,6,raw_website_pageviews.csv
+website_sessions,472871,11,raw_website_sessions.csv

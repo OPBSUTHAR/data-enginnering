@@ -1,0 +1,37 @@
+Table,Field,Description,source_file,ingestion_time
+orders,order_id,Unique identifier for each order (PK),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+orders,created_at,Timestamp when the order was placed,maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+orders,website_session_id,Unique identifier for the website session (FK),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+orders,user_id,Unique identifier for the user (FK),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+orders,primary_product_id,Unique identifier for the primary product in the order if part of a bundle (FK),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+orders,items_purchased,Number of items in the order,maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+orders,price_usd,Total price for the items in the order,maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+orders,cogs_usd,Cost of goods sold for the items in the order,maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+order_items,order_item_id,Unique identifier for each order item (PK),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+order_items,created_at,Timestamp when the order was placed,maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+order_items,order_id,Unique identifier for the order the item belongs to (FK),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+order_items,product_id,Unique identifier for the product (FK),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+order_items,is_primary_item,Binary flag with a value of 1 if it's the primary item in the order,maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+order_items,price_usd,Price of the product,maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+order_items,cogs_usd,Cost of goods sold of the product,maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+order_item_refunds,order_item_refund_id,Unique identifier for each refund (PK),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+order_item_refunds,created_at,Timestamp when the refund was issued,maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+order_item_refunds,order_item_id,Unique identifier for the order item that was refunded (FK),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+order_item_refunds,order_id,Unique identifier for the order the refunded item belonged to (FK),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+order_item_refunds,refund_amount_usd,Refund amount,maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+products,product_id,Unique identifier for the product (PK),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+products,created_at,Timestamp for when the product was launched,maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+products,product_name,Name of the product,maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+website_sessions,website_session_id,Unique identifier for the website session (PK),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+website_sessions,created_at,Timestamp when the session started,maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+website_sessions,user_id,Unique identifier for the user (FK),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+website_sessions,is_repeat_session,Binary flag with a value of 1 if the user has had a previous ression,maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+website_sessions,utm_source,UTM source parameter (traffic origin),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+website_sessions,utm_campaign,UTM campaign parameter (marketing campaign name),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+website_sessions,utm_content,UTM content parameter (ad/content variant),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+website_sessions,device_type,Device category (mobile or desktop),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+website_sessions,http_referer,URL for the UTM source,maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+website_pageviews,website_pageview_id,Unique identifier for each website pageview (PK),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+website_pageviews,created_at,Timestamp for the pageview,maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+website_pageviews,website_session_id,Unique identifier for the website session the pageview belongs to (FK),maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
+website_pageviews,pageview_url,URL path for the pageview,maven_fuzzy_factory_data_dictionary.csv,2026-03-30 12:53:43
