@@ -17,8 +17,6 @@ def run_advanced_pipeline():
     students_file = "students.csv"
     placements_file = "placements.csv"
     lms_file = "lms.json"
-    
-    # Resolve exact user file system names safely
     attendance_file = "attendance.xlsx - Sheet1.csv" if os.path.exists("attendance.xlsx - Sheet1.csv") else "attendance.xlsx"
 
     if not all(os.path.exists(f) for f in [students_file, attendance_file, placements_file, lms_file]):
@@ -34,15 +32,26 @@ def run_advanced_pipeline():
     df_lms = pd.read_json(lms_file)
 
     # Profiling Phase (Quality Auditing)
-    pre_merge_audit = {}
+    source_profiles = {}
+    pre_merge_null_logs = {}
+    duplicate_logs = {}
+    
     for name, df in [("Students", df_students), ("Attendance", df_attendance), ("Placements", df_placements), ("LMS", df_lms)]:
+        source_profiles[name] = {
+            "rows": df.shape[0],
+            "cols": df.shape[1],
+            "attributes": list(df.columns)
+        }
         null_counts = df.isnull().sum()
-        pre_merge_audit[name] = null_counts[null_counts > 0].to_dict()
+        pre_merge_null_logs[name] = null_counts[null_counts > 0].to_dict()
+        duplicate_logs[name] = int(df.duplicated().sum())
 
+    # Resolve active attendance column naming conventions
     global att_col
     att_col = 'Attendance_Percentage' if 'Attendance_Percentage' in df_attendance.columns else \
               ('Attendance' if 'Attendance' in df_attendance.columns else df_attendance.select_dtypes(include=['float', 'int']).columns[0])
 
+    # Referential Integrity Check: Identify unmapped cross-system keys
     student_keys = set(df_students['Student_ID'])
     lms_orphans = list(student_keys - set(df_lms['Student_ID']))
     placement_orphans = list(student_keys - set(df_placements['Student_ID']))
@@ -64,20 +73,20 @@ def run_advanced_pipeline():
     final_df['LMS_Active'] = final_df['Videos_Watched'] > 0
 
     return (df_students, df_attendance, df_placements, df_lms, final_df, 
-            pre_merge_audit, post_merge_null_logs, lms_orphans, placement_orphans)
+            pre_merge_null_logs, post_merge_null_logs, lms_orphans, placement_orphans)
 
-# Run Pipeline
+# Initialize Engine
 raw_student, raw_att, raw_place, raw_lms, integrated_df, pre_audit, post_audit, lms_miss, place_miss = run_advanced_pipeline()
 
 
 # =====================================================================
-# INTERACTIVE DESKTOP INTERFACE WORKSPACE
+# DESKTOP INTERFACE WORKSPACE CONFIGURATION
 # =====================================================================
 root = tk.Tk()
 root.title("Data Engineering Warehouse Workstation")
 root.geometry("1400x850")
 
-# Clean execution teardown handler to fix terminal hang problems
+# Clean teardown callback prevents active matplotlib windows from causing terminal hangs on exit
 def secure_teardown_callback():
     plt.close('all')
     root.quit()
@@ -121,7 +130,7 @@ paned.pack(fill='both', expand=True, padx=10, pady=5)
 l_d = ttk.Frame(paned); r_d = ttk.Frame(paned); paned.add(l_d, weight=1); paned.add(r_d, weight=1)
 ttk.Label(l_d, text="students.csv Raw Data View", font=('Segoe UI', 9, 'bold')).pack(anchor='w')
 build_grid_viewport(l_d, raw_student)
-ttk.Label(l_d, text="attendance sheet Raw Data View", font=('Segoe UI', 9, 'bold')).pack(anchor='w', pady=(5,0))
+ttk.Label(l_d, text="attendance.xlsx Raw Data View", font=('Segoe UI', 9, 'bold')).pack(anchor='w', pady=(5,0))
 build_grid_viewport(l_d, raw_att)
 ttk.Label(r_d, text="placements.csv Raw Data View", font=('Segoe UI', 9, 'bold')).pack(anchor='w')
 build_grid_viewport(r_d, raw_place)
@@ -147,35 +156,72 @@ for col, count in post_audit.items(): report_txt += f"   • Destination Attribu
 audit_box.insert(tk.END, report_txt)
 audit_box.config(state='disabled')
 
-# --- Panel 3: Relational Explorer ---
+
+# ---------------------------------------------------------------------
+# PANEL 3: RELATIONAL WAREHOUSE MATRIX OPERATIONS RESTORED
+# ---------------------------------------------------------------------
 tab3 = ttk.Frame(notebook)
 notebook.add(tab3, text="⚙️ Panel 3: Warehouse State Explorer")
-control_panel = ttk.Frame(tab3, width=320, padding=10); control_panel.pack(side='left', fill='y')
-warehouse_panel = ttk.Frame(tab3, padding=10); warehouse_panel.pack(side='right', fill='both', expand=True)
+control_panel = ttk.Frame(tab3, width=320, padding=10)
+control_panel.pack(side='left', fill='y')
+warehouse_panel = ttk.Frame(tab3, padding=10)
+warehouse_panel.pack(side='right', fill='both', expand=True)
+
+ttk.Label(warehouse_panel, text="Unified Cleaned Warehouse State Matrix (Imputed Data Viewports)", style='Header.TLabel').pack(anchor='w', pady=5)
+
 cgpa_filter = tk.StringVar(value="All Tiers")
+att_filter = tk.StringVar(value="All Tiers")
+lms_filter = tk.StringVar(value="All Tiers")
 
 def execute_warehouse_slice():
+    """Wired up all operations: Safely slices data across all 3 conditions simultaneously."""
     for item in main_tree.get_children(): main_tree.delete(item)
     df = integrated_df.copy()
+    
+    # 1. Academic Scale Operation
     c_sel = cgpa_filter.get()
     if c_sel == "High Academic (> 8.5)": df = df[df['CGPA'] > 8.5]
     elif c_sel == "Medium Academic (6.5 - 8.5)": df = df[(df['CGPA'] >= 6.5) & (df['CGPA'] <= 8.5)]
     elif c_sel == "Low Academic (< 6.5)": df = df[df['CGPA'] < 6.5]
+        
+    # 2. Attendance Scale Operation
+    a_sel = att_filter.get()
+    if a_sel == "High Attendance (> 90%)": df = df[df[att_col] > 90]
+    elif a_sel == "Medium Attendance (75% - 90%)": df = df[(df[att_col] >= 75) & (df[att_col] <= 90)]
+    elif a_sel == "Low Attendance (< 75%)": df = df[df[att_col] < 75]
+        
+    # 3. LMS Telemetry Engagement Operation
+    l_sel = lms_filter.get()
+    if l_sel == "High Engagement (> 20 videos)": df = df[df['Videos_Watched'] > 20]
+    elif l_sel == "Moderate Engagement (1 - 20)": df = df[(df['Videos_Watched'] >= 1) & (df['Videos_Watched'] <= 20)]
+    elif l_sel == "Inactive Platform Accounts": df = df[df['Videos_Watched'] == 0]
+        
     for _, row in df.iterrows(): main_tree.insert("", tk.END, values=[str(x) for x in row])
     lbl_counter.config(text=f"Records Rendered: {len(df)} of {len(integrated_df)}")
 
 ttk.Label(control_panel, text="Dynamic Matrix Filtering", font=('Segoe UI', 11, 'bold')).pack(anchor='w', pady=5)
+
 f_cgpa = ttk.LabelFrame(control_panel, text=" Filter by Academic Tier ", padding=5); f_cgpa.pack(fill='x', pady=4)
 for opt in ["All Tiers", "High Academic (> 8.5)", "Medium Academic (6.5 - 8.5)", "Low Academic (< 6.5)"]:
     ttk.Radiobutton(f_cgpa, text=opt, variable=cgpa_filter, value=opt, command=execute_warehouse_slice).pack(anchor='w')
+
+f_att = ttk.LabelFrame(control_panel, text=" Filter by Attendance Tier ", padding=5); f_att.pack(fill='x', pady=4)
+for opt in ["All Tiers", "High Attendance (> 90%)", "Medium Attendance (75% - 90%)", "Low Attendance (< 75%)"]:
+    ttk.Radiobutton(f_att, text=opt, variable=att_filter, value=opt, command=execute_warehouse_slice).pack(anchor='w')
+
+f_lms = ttk.LabelFrame(control_panel, text=" Filter by LMS Tier ", padding=5); f_lms.pack(fill='x', pady=4)
+for opt in ["All Tiers", "High Engagement (> 20 videos)", "Moderate Engagement (1 - 20)", "Inactive Platform Accounts"]:
+    ttk.Radiobutton(f_lms, text=opt, variable=lms_filter, value=opt, command=execute_warehouse_slice).pack(anchor='w')
+
 lbl_counter = ttk.Label(control_panel, text="", font=('Segoe UI', 10, 'italic')); lbl_counter.pack(pady=10)
+
 main_tree_frame = ttk.Frame(warehouse_panel); main_tree_frame.pack(fill='both', expand=True)
 main_tree = build_grid_viewport(main_tree_frame, integrated_df)
 execute_warehouse_slice()
 
 
 # ---------------------------------------------------------------------
-# PANEL 4: STATISTICAL METRICS & HOVER-ENABLED CHART ROOM (Q23 - Q40)
+# PANEL 4: ACCURATE ANALYSIS AND TOOLTIP HOVER VISUAL SUITE (Q23 - Q40)
 # ---------------------------------------------------------------------
 tab4 = ttk.Frame(notebook)
 notebook.add(tab4, text="📊 Panel 4: Interactive Charts Room")
@@ -192,12 +238,11 @@ graph_control_box = ttk.LabelFrame(tab4, text=" Interactive Visual Exploration F
 graph_control_box.pack(fill='both', expand=True, padx=15, pady=10)
 
 def spawn_responsive_chart(chart_id):
-    """Spawns an independent, explicitly synchronized figure window with hover data tooltips."""
+    """Spawns an independent, synchronized window frame utilizing mouse hovers and data labels perfectly."""
     sns.set_theme(style="whitegrid")
     pop_win = tk.Toplevel(root)
     pop_win.geometry("800x600")
     
-    # Force window allocation sync before evaluating Matplotlib render canvas hooks
     pop_win.update_idletasks()
     
     fig, ax = plt.subplots(figsize=(6.8, 5.0))
@@ -206,14 +251,16 @@ def spawn_responsive_chart(chart_id):
     has_dept = 'Department' in df.columns
     has_cgpa = 'CGPA' in df.columns
 
-    annot = ax.annotate("", xy=(0,0), xytext=(12,12), textcoords="offset points",
-                        bbox=dict(boxstyle="round,pad=0.4", fc="#1e293b", fg="white", lw=0, alpha=0.92),
+    # FIXED: Replaced 'fg' attribute with standalone text color initialization property configurations
+    annot = ax.annotate("", xy=(0,0), xytext=(12,12), textcoords="offset points", color="white",
+                        bbox=dict(boxstyle="round,pad=0.4", fc="#1e293b", ec="none", alpha=0.92),
                         arrowprops=dict(arrowstyle="->", color="#64748b"))
     annot.set_visible(False)
 
     artists_list = []
     hover_type = "bar" 
     names_arr = []
+    sc_df_reference = [] 
 
     if chart_id == 1:
         pop_win.title("Analysis 1: Departmental Average CGPA Profiles (Q35)")
@@ -268,12 +315,11 @@ def spawn_responsive_chart(chart_id):
             palette = sns.color_palette("Set2", len(unique_depts))
             dept_color_map = dict(zip(unique_depts, palette))
             
-            sc_list = []
             for d, group in df.groupby('Department' if has_dept else lambda x: 'All'):
                 sc = ax.scatter(group[att_col], group['CGPA'], label=d, s=110, color=dept_color_map[d], edgecolor='#334155', alpha=0.85)
-                sc_list.append(sc)
+                artists_list.append(sc)
+                sc_df_reference.append(group.reset_index(drop=True))
             ax.legend(title="Departments")
-            artists_list = sc_list
             hover_type = "scatter"
         ax.set_title("CGPA vs Attendance Correlation Matrix (Mouse-Hover Enabled)", fontsize=11, weight='bold')
         ax.set_xlabel("Attendance %")
@@ -293,12 +339,11 @@ def spawn_responsive_chart(chart_id):
     fig.tight_layout()
     fig.savefig(f'chart_snapshot_analysis_{chart_id}.png', dpi=150)
 
-    # Tooltip evaluation handler function
-    def update_tooltip(target_artist, index, h_type, bar_name=""):
+    def update_tooltip(target_artist, index, h_type, bar_name="", scatter_group_idx=0):
         if h_type == "scatter":
             pos = target_artist.get_offsets()[index]
             annot.xy = pos
-            matched_row = df[(df[att_col] == pos[0]) & (df['CGPA'] == pos[1])].iloc[0]
+            matched_row = sc_df_reference[scatter_group_idx].iloc[index]
             card_info = f"Student ID: {matched_row['Student_ID']}\n" \
                         f"Name: {matched_row['Name']}\n" \
                         f"Dept: {matched_row['Department']}\n" \
@@ -328,10 +373,10 @@ def spawn_responsive_chart(chart_id):
         if event.inaxes == ax:
             is_found = False
             if hover_type == "scatter":
-                for sc in artists_list:
+                for g_idx, sc in enumerate(artists_list):
                     cont, ind = sc.contains(event)
                     if cont:
-                        update_tooltip(sc, ind['ind'][0], "scatter")
+                        update_tooltip(sc, ind['ind'][0], "scatter", scatter_group_idx=g_idx)
                         annot.set_visible(True)
                         fig.canvas.draw_idle()
                         is_found = True
